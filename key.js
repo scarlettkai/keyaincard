@@ -1,4 +1,3 @@
-// GxA - MODERN OVERLAY DENGAN KEY "GxA"
 javascript:(function(){
 if(document.getElementById('GxA_overlay'))return;
 var h=location.host;
