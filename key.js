@@ -1,8 +1,8 @@
+// GxA - MODERN OVERLAY DENGAN KEY "GxA"
 javascript:(function(){
 if(document.getElementById('GxA_overlay'))return;
 var h=location.host;
 
-// Sound function (Web Audio)
 var playSound=function(type){
     try{
         var ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -44,7 +44,6 @@ var playSound=function(type){
     }catch(e){}
 };
 
-// Inject CSS
 var style=document.createElement('style');
 style.textContent=`
 @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,800&display=swap');
@@ -70,13 +69,11 @@ style.textContent=`
 `;
 document.head.appendChild(style);
 
-// Create overlay
 var ov=document.createElement('div');
 ov.id='GxA_overlay';
-ov.innerHTML='<div class="gxa-card" style="position:relative;"><span class="gxa-close" id="gxaClose">✕</span><div class="gxa-badge">⚡ GxA CYBER ENGINE ⚡</div><div class="gxa-title">GxA</div><div class="gxa-sub">SECURE ACCESS / BYPASS v4</div><div class="gxa-input-wrap"><input class="gxa-input" id="gxaInput" type="password" placeholder="•••• ENTER KEY ••••" maxlength="24" autocomplete="off"></div><div class="gxa-error" id="gxaError"></div><button class="gxa-btn" id="gxaBtn">⟡ UNLOCK & BYPASS ⟡</button><div class="gxa-loader" id="gxaLoader"><svg width="130" height="130" viewBox="0 0 140 140"><circle cx="70" cy="70" r="60" fill="#0a0a14" stroke="#1f2a4a" stroke-width="6"/><circle id="gxaArc" cx="70" cy="70" r="60" fill="none" stroke="#0ff" stroke-width="8" stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 70 70)"/><text id="gxaTimer" x="70" y="82" text-anchor="middle" fill="#0ff" font-size="44" font-weight="bold" font-family="monospace">5</text></svg><div class="gxa-status" id="gxaStatus">⟳ INITIALIZING...</div></div><div class="gxa-footer"><span>✦ GxA ENGINE</span><span>🔒 ENCRYPTED</span></div></div>';
+ov.innerHTML='<div class="gxa-card" style="position:relative;"><span class="gxa-close" id="gxaClose">✕</span><div class="gxa-badge">⚡ GxA CYBER ENGINE ⚡</div><div class="gxa-title">GxA</div><div class="gxa-sub">SECURE ACCESS / BYPASS v5</div><div class="gxa-input-wrap"><input class="gxa-input" id="gxaInput" type="password" placeholder="•••• ENTER KEY ••••" maxlength="24" autocomplete="off"></div><div class="gxa-error" id="gxaError"></div><button class="gxa-btn" id="gxaBtn">⟡ UNLOCK & BYPASS ⟡</button><div class="gxa-loader" id="gxaLoader"><svg width="130" height="130" viewBox="0 0 140 140"><circle cx="70" cy="70" r="60" fill="#0a0a14" stroke="#1f2a4a" stroke-width="6"/><circle id="gxaArc" cx="70" cy="70" r="60" fill="none" stroke="#0ff" stroke-width="8" stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 70 70)"/><text id="gxaTimer" x="70" y="82" text-anchor="middle" fill="#0ff" font-size="44" font-weight="bold" font-family="monospace">5</text></svg><div class="gxa-status" id="gxaStatus">⟳ INITIALIZING...</div></div><div class="gxa-footer"><span>✦ GxA ENGINE</span><span>🔒 ENCRYPTED</span></div></div>';
 document.body.appendChild(ov);
 
-// Get elements
 var inp=document.getElementById('gxaInput');
 var btn=document.getElementById('gxaBtn');
 var errDiv=document.getElementById('gxaError');
@@ -102,6 +99,107 @@ function showLoader(seconds=5){
     arc.setAttribute('stroke-dashoffset','0');
     if(countdownInt)clearInterval(countdownInt);
     countdownInt=setInterval(function(){
+        s--;
+        timerEl.textContent=s>=0?s:0;
+        var offset=(total/seconds)*(seconds-s);
+        arc.setAttribute('stroke-dashoffset',offset);
+        if(s<=0){
+            clearInterval(countdownInt);
+            timerEl.textContent='⚡';
+            arc.setAttribute('stroke','#4ade80');
+            statusEl.textContent='🚀 UNLOCKING...';
+        }
+    },1000);
+}
+
+function hideLoaderAndRedirect(url){
+    if(countdownInt)clearInterval(countdownInt);
+    statusEl.textContent='✅ REDIRECTING...';
+    setTimeout(function(){ov.remove();window.location.href=url;},600);
+}
+
+function bypassSite(domain,cb){
+    var proto=domain==='rodaemotor.com'?'http':'https';
+    fetch(proto+'://'+domain+'/api/session-info',{credentials:'include',headers:{'Accept':'*/*'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+        if(!d.sessionToken){statusEl.textContent='❌ No session!';return;}
+        statusEl.textContent='🔑 FETCHING TOKEN...';
+        var progress=(d.totalStage||0)+1;
+        var payload=encodeURIComponent(JSON.stringify({"0":{"json":{"token":d.sessionToken,"progress":progress,"stageId":d.stageId}}}));
+        fetch(proto+'://'+domain+'/api/trpc/linkSession.nextStage?batch=1&input='+payload,{
+            credentials:'include',
+            headers:{'trpc-accept':'application/jsonl','x-trpc-source':'nextjs-react','Accept':'*/*'}
+        }).then(function(r){return r.text();})
+        .then(function(t){
+            var dest=null;
+            t.trim().split('\n').forEach(function(l){
+                try{
+                    var j=JSON.parse(l);
+                    if(j&&j.json&&Array.isArray(j.json)&&j.json[2]){
+                        var dd=j.json[2][0][0];
+                        if(dd){if(dd.destinationLink)dest=dd.destinationLink;if(dd.url)dest=dd.url;}
+                    }
+                }catch(e){}
+            });
+            cb(dest);
+        });
+    })
+    .catch(function(e){statusEl.textContent='❌ Error: '+e.message;});
+}
+
+btn.onclick=function(){
+    var val=inp.value.trim().toUpperCase();
+    // KEY SEKARANG: GxA (case sensitive, huruf G besar x kecil A besar? pake uppercase aja biar aman)
+    if(val !== 'GXA'){
+        errDiv.textContent='⛔ INVALID KEY | ACCESS DENIED';
+        playSound('error');
+        inp.value='';
+        inp.focus();
+        return;
+    }
+    errDiv.textContent='';
+    playSound('grant');
+    
+    if(h.includes('tarviral.com')||h.includes('rodaemotor.com')){
+        showLoader(6);
+        setTimeout(function(){
+            if(h.includes('tarviral.com')){
+                bypassSite('tarviral.com',function(dest){
+                    if(dest) hideLoaderAndRedirect(dest);
+                    else statusEl.textContent='❌ BYPASS FAILED';
+                });
+            }else if(h.includes('rodaemotor.com')){
+                bypassSite('rodaemotor.com',function(dest){
+                    if(dest) hideLoaderAndRedirect(dest);
+                    else statusEl.textContent='❌ FAILED';
+                });
+            }
+        },1200);
+    }else if(h.includes('aincradmods.com')){
+        showLoader(3);
+        fetch('https://aincradmods.com/getkey.data',{method:'POST',credentials:'include',headers:{'content-type':'application/x-www-form-urlencoded'}})
+        .then(function(){hideLoaderAndRedirect('https://alpharede.com/aincrad2');})
+        .catch(function(){hideLoaderAndRedirect('https://alpharede.com/aincrad2');});
+    }else if(h.includes('alpharede.com')){
+        showLoader(2);
+        setTimeout(function(){hideLoaderAndRedirect('https://alpharede.com/aincrad2');},1000);
+    }else if(h.includes('horoscopeonday.com')){
+        showLoader(3);
+        setTimeout(function(){
+            window.location.href = 'https://horoscopeonday.com/padroes-de-movimento-funcionais-por-que-seus-treinos-devem-imitar-a-vida-real/';
+            ov.remove();
+        },1500);
+    }else{
+        errDiv.textContent='⚠️ Open supported site first! (aincradmods, tarviral, rodaemotor, alpharede, horoscopeonday)';
+        playSound('error');
+    }
+};
+
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')btn.click();});
+inp.focus();
+playSound('unlock');
+})();    countdownInt=setInterval(function(){
         s--;
         timerEl.textContent=s>=0?s:0;
         var offset=(total/seconds)*(seconds-s);
